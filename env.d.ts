@@ -1,6 +1,8 @@
 declare namespace NodeJS {
   interface ProcessEnv {
     NEXT_PUBLIC_PRIVY_APP_ID?: string;
+    /** Optional Privy app client ID (dashboard → Settings → Clients). Improves session persistence. */
+    NEXT_PUBLIC_PRIVY_CLIENT_ID?: string;
     NEXT_PUBLIC_INDEXER_URL?: string;
     NEXT_PUBLIC_SEPOLIA_RPC_URL?: string;
     NEXT_PUBLIC_MAPLIBRE_STYLE_URL?: string;

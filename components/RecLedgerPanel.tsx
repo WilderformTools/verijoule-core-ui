@@ -151,9 +151,7 @@ export function RecLedgerPanel({
                   onClick={() => onAddVintage?.(vintage)}
                   disabled={!onAddVintage}
                   className={`grid min-h-10 w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-3 text-left text-sm transition-colors ${
-                    onAddVintage
-                      ? "cursor-pointer hover:bg-[#111111]"
-                      : "cursor-default"
+                    onAddVintage ? "hover:bg-[#111111]" : ""
                   } ${inCart ? "bg-[#111111] text-white" : "text-white"}`}
                 >
                   <span className="truncate">{vintage.vintageId}</span>

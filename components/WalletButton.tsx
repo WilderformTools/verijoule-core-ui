@@ -1,15 +1,23 @@
 "use client";
 
-import { usePrivy } from "@privy-io/react-auth";
+import { usePrivy, useWallets } from "@privy-io/react-auth";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useAccount } from "wagmi";
 
-function truncateAddress(address: string): string {
-  return `${address.slice(0, 6)}...${address.slice(-4)}`;
-}
+import { AccountMenu } from "@/components/AccountMenu";
+
+const DISCONNECT_SPINNER_MS = 450;
 
 const labelClassName =
   "shrink-0 bg-black p-0 py-2 font-mono text-xs uppercase tracking-[0.22em] text-white";
 
 const buttonClassName = `${labelClassName} transition-colors hover:text-[#3d3d3d] disabled:cursor-not-allowed disabled:opacity-60`;
+
+const dividerClassName = "font-mono text-xs font-light text-[#666666]";
+
+function HeaderDivider() {
+  return <span className={dividerClassName}>|</span>;
+}
 
 function WireframeDisconnectArrow() {
   return (
@@ -43,20 +51,71 @@ function DisconnectArrow({ onClick }: { onClick: () => void }) {
   );
 }
 
+function DisconnectSpinner() {
+  return (
+    <span
+      className="flex h-8 shrink-0 items-center justify-center bg-black px-2 text-white"
+      role="status"
+      aria-live="polite"
+      aria-label="Disconnecting wallet"
+    >
+      <svg
+        viewBox="0 0 14 14"
+        width={14}
+        height={14}
+        aria-hidden
+        className="block shrink-0 animate-wallet-disconnect"
+      >
+        <circle cx="7" cy="2" r="1.5" fill="currentColor" />
+        <circle cx="11.33" cy="9.5" r="1.5" fill="currentColor" />
+        <circle cx="2.67" cy="9.5" r="1.5" fill="currentColor" />
+      </svg>
+    </span>
+  );
+}
+
 type WalletButtonProps = {
   onMyRetirementsClick?: () => void;
 };
 
 export function WalletButton({ onMyRetirementsClick }: WalletButtonProps) {
   const { ready, authenticated, user, login, logout } = usePrivy();
-  const walletAddress = user?.wallet?.address;
+  const { ready: walletsReady } = useWallets();
+  const { address } = useAccount();
+  const walletAddress = address ?? user?.wallet?.address;
+  const isRestoringSession = ready && authenticated && !walletsReady;
+  const [isDisconnecting, setIsDisconnecting] = useState(false);
+  const disconnectStartedAt = useRef<number | null>(null);
+
+  const handleDisconnect = useCallback(() => {
+    disconnectStartedAt.current = Date.now();
+    setIsDisconnecting(true);
+    void logout();
+  }, [logout]);
+
+  useEffect(() => {
+    if (!isDisconnecting || authenticated) return;
+
+    const elapsed = disconnectStartedAt.current
+      ? Date.now() - disconnectStartedAt.current
+      : 0;
+    const remaining = Math.max(0, DISCONNECT_SPINNER_MS - elapsed);
+    const timer = window.setTimeout(() => {
+      setIsDisconnecting(false);
+      disconnectStartedAt.current = null;
+    }, remaining);
+
+    return () => window.clearTimeout(timer);
+  }, [isDisconnecting, authenticated]);
 
   return (
     <div className="flex w-full min-w-0 items-center justify-end gap-2">
-      {!ready ? (
+      {!ready || isRestoringSession ? (
         <button type="button" disabled className={buttonClassName}>
           BOOTING...
         </button>
+      ) : isDisconnecting ? (
+        <DisconnectSpinner />
       ) : !authenticated ? (
         <button type="button" onClick={login} className={buttonClassName}>
           CONNECT
@@ -71,12 +130,16 @@ export function WalletButton({ onMyRetirementsClick }: WalletButtonProps) {
           >
             MY RETIREMENTS
           </button>
-          <span className={`${labelClassName} inline-block cursor-default`}>
-            {walletAddress
-              ? truncateAddress(walletAddress)
-              : "CONNECTED"}
-          </span>
-          <DisconnectArrow onClick={logout} />
+          <HeaderDivider />
+          {walletAddress ? (
+            <AccountMenu address={walletAddress} labelClassName={labelClassName} />
+          ) : (
+            <span className={`${labelClassName} inline-block cursor-default`}>
+              CONNECTED
+            </span>
+          )}
+          <HeaderDivider />
+          <DisconnectArrow onClick={handleDisconnect} />
         </>
       )}
     </div>

@@ -7,6 +7,8 @@ import { type ReactNode, useState } from "react";
 import { http } from "wagmi";
 import { sepolia } from "wagmi/chains";
 
+import { ActiveWalletSync } from "@/components/ActiveWalletSync";
+
 type Web3ProvidersProps = {
   children: ReactNode;
 };
@@ -20,18 +22,32 @@ const wagmiConfig = createConfig({
   },
 });
 
+const privyClientId = process.env.NEXT_PUBLIC_PRIVY_CLIENT_ID?.trim();
+
 export function Web3Providers({ children }: Web3ProvidersProps) {
   const [queryClient] = useState(() => new QueryClient());
 
   return (
     <PrivyProvider
       appId={process.env.NEXT_PUBLIC_PRIVY_APP_ID ?? ""}
+      {...(privyClientId ? { clientId: privyClientId } : {})}
       config={{
         appearance: {
           theme: "dark",
           accentColor: "#FFFFFF",
           // Privy runtime accepts null here, but current SDK typings require string/ReactElement.
           logo: null as unknown as string,
+          walletList: [
+            "detected_ethereum_wallets",
+            "metamask",
+            "rabby_wallet",
+            "coinbase_wallet",
+          ],
+        },
+        embeddedWallets: {
+          ethereum: {
+            createOnLogin: "off",
+          },
         },
         loginMethods: ["wallet"],
         defaultChain: sepolia,
@@ -39,7 +55,10 @@ export function Web3Providers({ children }: Web3ProvidersProps) {
       }}
     >
       <QueryClientProvider client={queryClient}>
-        <WagmiProvider config={wagmiConfig}>{children}</WagmiProvider>
+        <WagmiProvider config={wagmiConfig}>
+          <ActiveWalletSync />
+          {children}
+        </WagmiProvider>
       </QueryClientProvider>
     </PrivyProvider>
   );

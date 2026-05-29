@@ -2,6 +2,7 @@
 
 import { usePrivy } from "@privy-io/react-auth";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useAccount } from "wagmi";
 import { MapContainer } from "@/components/MapContainer";
 import { MyRetirementsPanel } from "@/components/MyRetirementsPanel";
 import {
@@ -17,7 +18,8 @@ import type { RetirementLine } from "@/lib/retirement";
 
 export function HomeDashboard() {
   const { user } = usePrivy();
-  const walletAddress = user?.wallet?.address;
+  const { address } = useAccount();
+  const walletAddress = address ?? user?.wallet?.address;
   const [retirementsOpen, setRetirementsOpen] = useState(false);
   const [cartLines, setCartLines] = useState<RetirementLine[]>([]);
   const [focusedVintageId, setFocusedVintageId] = useState<string | null>(null);
@@ -166,29 +168,29 @@ export function HomeDashboard() {
 
       {retirementsOpen ? (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-6"
+          className="fixed inset-0 z-50 flex cursor-pointer items-center justify-center bg-black/80 p-6"
           role="presentation"
           onClick={() => setRetirementsOpen(false)}
         >
           <div
-            className="flex h-[min(32rem,85vh)] w-full max-w-lg min-h-0 flex-col"
+            className="relative flex h-[min(32rem,85vh)] w-full max-w-lg min-h-0 cursor-default flex-col"
             role="dialog"
             aria-modal="true"
             aria-labelledby="my-retirements-title"
             onClick={(event) => event.stopPropagation()}
           >
+            <button
+              type="button"
+              onClick={() => setRetirementsOpen(false)}
+              className="absolute right-3 top-0 z-20 -translate-y-1/2 border border-[#3d3d3d] bg-[#050505] px-2 py-1 text-[10px] uppercase tracking-[0.22em] text-white transition-colors hover:bg-white hover:text-black"
+            >
+              close
+            </button>
             <TerminalPanel
               title="My Retirements"
               className="h-full min-h-0"
-              contentClassName="relative flex min-h-0 flex-1 flex-col"
+              contentClassName="flex min-h-0 flex-1 flex-col"
             >
-              <button
-                type="button"
-                onClick={() => setRetirementsOpen(false)}
-                className="absolute right-4 top-4 z-20 border border-[#3d3d3d] bg-black px-2 py-1 text-[10px] uppercase tracking-[0.22em] text-white transition-colors hover:bg-white hover:text-black"
-              >
-                close
-              </button>
               <div id="my-retirements-title" className="sr-only">
                 My Retirements
               </div>

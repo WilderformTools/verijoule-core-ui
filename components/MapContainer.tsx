@@ -8,6 +8,12 @@ import { useLayoutEffect, useRef } from "react";
 import { TerminalPanel } from "@/components/TerminalPanel";
 import { CO_ENERGY_PLANTS } from "@/lib/co-energy-plants";
 import { expandLngLatBounds, featureCollectionLngLatBounds } from "@/lib/geo-bbox";
+import {
+  MAP_ICON_SOLAR,
+  MAP_ICON_WIND,
+  solarPlantIconBitmap,
+  windPlantIconBitmap,
+} from "@/lib/map-plant-icons";
 import { COLORADO_STATE_GEOJSON } from "@/lib/verijoule-map-data";
 
 /** Dark vector basemap (no key). Override with `NEXT_PUBLIC_MAPLIBRE_STYLE_URL`. */
@@ -20,8 +26,7 @@ const FALLBACK_MAP_STYLE = "https://demotiles.maplibre.org/style.json";
 const CO_FILL = "#111111";
 const CO_FILL_OPACITY = 0.42;
 const STROKE_WHITE = "#ffffff";
-const PLANT_SUN_RADIUS_PX = 3.25;
-const WIND_ICON_CANVAS_PX = 48;
+const PLANT_ICON_SIZE = 0.18;
 const FIT_BOUNDS_PADDING = { top: 52, right: 44, bottom: 52, left: 44 };
 
 const PLANTS_GEOJSON: FeatureCollection = {
@@ -37,27 +42,11 @@ const PLANTS_GEOJSON: FeatureCollection = {
   })),
 };
 
-function windXDataUrl(size: number): string {
-  const canvas = document.createElement("canvas");
-  canvas.width = size;
-  canvas.height = size;
-  const ctx = canvas.getContext("2d");
-  if (!ctx) return "";
-  const pad = Math.max(2, size * 0.18);
-  ctx.clearRect(0, 0, size, size);
-  ctx.strokeStyle = STROKE_WHITE;
-  ctx.lineWidth = Math.max(1.5, size / 10);
-  ctx.lineCap = "square";
-  ctx.beginPath();
-  ctx.moveTo(pad, pad);
-  ctx.lineTo(size - pad, size - pad);
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.moveTo(size - pad, pad);
-  ctx.lineTo(pad, size - pad);
-  ctx.stroke();
-  return canvas.toDataURL("image/png");
-}
+const PLANT_SYMBOL_LAYOUT = {
+  "icon-size": PLANT_ICON_SIZE,
+  "icon-allow-overlap": true,
+  "icon-ignore-placement": true,
+} as const;
 
 /** Run `cb` once the element has a real layout size (MapLibre needs non-zero box at init). */
 function waitForNonZeroSize(el: HTMLElement, cb: () => void): () => void {
@@ -180,44 +169,40 @@ export function MapContainer({ className }: MapContainerProps) {
         });
       }
 
-      if (!m.getLayer("plants-sun")) {
-        m.addLayer({
-          id: "plants-sun",
-          type: "circle",
-          source: "plants",
-          filter: ["==", ["get", "kind"], "sun"],
-          paint: {
-            "circle-radius": PLANT_SUN_RADIUS_PX,
-            "circle-color": STROKE_WHITE,
-            "circle-opacity": 1,
-          },
-        });
-      }
+      const plantIcons: {
+        id: string;
+        kind: "sun" | "wnd";
+        load: () => Promise<ImageBitmap>;
+      }[] = [
+        { id: MAP_ICON_SOLAR, kind: "sun", load: solarPlantIconBitmap },
+        { id: MAP_ICON_WIND, kind: "wnd", load: windPlantIconBitmap },
+      ];
 
-      const dataUrl = windXDataUrl(WIND_ICON_CANVAS_PX);
-      if (dataUrl && !cancelled) {
+      for (const { id, kind, load } of plantIcons) {
+        if (cancelled) return;
         try {
-          const { data } = await m.loadImage(dataUrl);
+          const bitmap = await load();
           if (cancelled) return;
-          if (!m.hasImage("wind-x")) {
-            m.addImage("wind-x", data);
+          if (m.hasImage(id)) {
+            m.updateImage(id, bitmap);
+          } else {
+            m.addImage(id, bitmap);
           }
-          if (!m.getLayer("plants-wnd")) {
+          const layerId = kind === "sun" ? "plants-sun" : "plants-wnd";
+          if (!m.getLayer(layerId)) {
             m.addLayer({
-              id: "plants-wnd",
+              id: layerId,
               type: "symbol",
               source: "plants",
-              filter: ["==", ["get", "kind"], "wnd"],
+              filter: ["==", ["get", "kind"], kind],
               layout: {
-                "icon-image": "wind-x",
-                "icon-size": 0.5,
-                "icon-allow-overlap": true,
-                "icon-ignore-placement": true,
+                ...PLANT_SYMBOL_LAYOUT,
+                "icon-image": id,
               },
             });
           }
-        } catch {
-          /* wind markers optional if image load fails */
+        } catch (e) {
+          console.error("[MapContainer] plant icon failed", id, e);
         }
       }
     };

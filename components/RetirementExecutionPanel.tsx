@@ -16,6 +16,26 @@ type RetirementExecutionPanelProps = {
   onRemoveLine: (vintageId: string) => void;
 };
 
+const quickQtyButtonClass =
+  "border border-[#3d3d3d] px-1 py-0.5 text-[10px] uppercase tracking-[0.12em] text-[#8a8a8a] transition-colors hover:border-white hover:text-white";
+
+function parseQuantityBigInt(raw: string): bigint {
+  const trimmed = raw.trim().replace(/,/g, "");
+  if (!/^\d+$/.test(trimmed)) return BigInt(0);
+  try {
+    return BigInt(trimmed);
+  } catch {
+    return BigInt(0);
+  }
+}
+
+function quantityAfterAdd(line: RetirementLine, delta: number): string {
+  const max = BigInt(line.maxAvailable);
+  const next = parseQuantityBigInt(line.quantity) + BigInt(delta);
+  const capped = next > max ? max : next;
+  return capped.toString();
+}
+
 export function RetirementExecutionPanel({
   lines,
   focusedVintageId,
@@ -60,7 +80,7 @@ export function RetirementExecutionPanel({
       </div>
 
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden border border-[#1d1d1d] bg-black">
-        <div className="grid h-9 shrink-0 grid-cols-[minmax(0,1fr)_minmax(5rem,7rem)_auto] items-center gap-3 border-b border-[#1d1d1d] px-3 text-[10px] uppercase tracking-[0.22em] text-[#666666]">
+        <div className="grid h-9 shrink-0 grid-cols-[minmax(0,1fr)_minmax(9rem,12rem)_auto] items-center gap-3 border-b border-[#1d1d1d] px-3 text-[10px] uppercase tracking-[0.22em] text-[#666666]">
           <span>vintage id</span>
           <span>quantity</span>
           <span className="sr-only">remove</span>
@@ -72,23 +92,55 @@ export function RetirementExecutionPanel({
             return (
               <li
                 key={line.vintageId}
-                className={`grid min-h-10 grid-cols-[minmax(0,1fr)_minmax(5rem,7rem)_auto] items-center gap-3 px-3 py-2 text-sm ${
+                className={`grid min-h-10 grid-cols-[minmax(0,1fr)_minmax(9rem,12rem)_auto] items-center gap-3 px-3 py-2 text-sm ${
                   isFocused ? "bg-[#111111]" : ""
                 }`}
               >
                 <span className="truncate text-white">{line.vintageId}</span>
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  pattern="[0-9]*"
-                  placeholder="MWh"
-                  value={line.quantity}
-                  onChange={(event) =>
-                    onQuantityChange(line.vintageId, event.target.value)
-                  }
-                  className="w-full border border-[#3d3d3d] bg-black px-2 py-1 text-right text-sm text-white outline-none focus:border-white"
-                  aria-label={`Quantity for vintage ${line.vintageId}`}
-                />
+                <div className="flex min-w-0 items-center gap-1">
+                  <div className="flex shrink-0 gap-0.5">
+                    <button
+                      type="button"
+                      onClick={() => onQuantityChange(line.vintageId, "")}
+                      className={quickQtyButtonClass}
+                      aria-label={`Clear quantity for vintage ${line.vintageId}`}
+                    >
+                      0
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        onQuantityChange(line.vintageId, quantityAfterAdd(line, 1))
+                      }
+                      className={quickQtyButtonClass}
+                      aria-label={`Add 1 MWh for vintage ${line.vintageId}`}
+                    >
+                      1
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        onQuantityChange(line.vintageId, quantityAfterAdd(line, 5))
+                      }
+                      className={quickQtyButtonClass}
+                      aria-label={`Add 5 MWh for vintage ${line.vintageId}`}
+                    >
+                      5
+                    </button>
+                  </div>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    placeholder="MWh"
+                    value={line.quantity}
+                    onChange={(event) =>
+                      onQuantityChange(line.vintageId, event.target.value)
+                    }
+                    className="min-w-0 flex-1 border border-[#3d3d3d] bg-black px-2 py-1 text-right text-sm text-white outline-none focus:border-white"
+                    aria-label={`Quantity for vintage ${line.vintageId}`}
+                  />
+                </div>
                 <button
                   type="button"
                   onClick={() => onRemoveLine(line.vintageId)}
