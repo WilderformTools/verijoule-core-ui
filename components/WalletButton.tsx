@@ -2,6 +2,7 @@
 
 import { usePrivy, useWallets } from "@privy-io/react-auth";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { isAddress } from "viem";
 import { useAccount } from "wagmi";
 
 import { AccountMenu } from "@/components/AccountMenu";
@@ -131,7 +132,7 @@ export function WalletButton({ onMyRetirementsClick }: WalletButtonProps) {
             MY RETIREMENTS
           </button>
           <HeaderDivider />
-          {walletAddress ? (
+          {walletAddress && isAddress(walletAddress) ? (
             <AccountMenu address={walletAddress} labelClassName={labelClassName} />
           ) : (
             <span className={`${labelClassName} inline-block cursor-default`}>
