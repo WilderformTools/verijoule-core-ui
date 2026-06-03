@@ -83,7 +83,7 @@ export function RecLedgerPanel({
   const { data, isLoading, isError } = useQuery({
     queryKey: ["active-vintages", INDEXER_URL],
     queryFn: fetchActiveVintages,
-    refetchInterval: 5_000,
+    refetchInterval: 15_000,
     refetchOnWindowFocus: false,
   });
 
@@ -141,7 +141,7 @@ export function RecLedgerPanel({
           <span>available</span>
         </div>
 
-        <ul className="min-h-0 flex-1 divide-y divide-[#111111] overflow-y-auto overscroll-y-contain">
+        <ul className="vj-scrollbar min-h-0 flex-1 divide-y divide-[#111111] overflow-y-auto overscroll-y-contain">
           {vintages.map((vintage) => {
             const inCart = cartVintageIds.includes(vintage.vintageId);
             return (
@@ -167,7 +167,7 @@ export function RecLedgerPanel({
 
       <div className="flex shrink-0 items-center justify-between text-[10px] uppercase tracking-[0.22em] text-[#666666]">
         <span>source: ponder graphql</span>
-        <span>refresh: 5s</span>
+        <span>refresh: 15s</span>
       </div>
     </div>
   );

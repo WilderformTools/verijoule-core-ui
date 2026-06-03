@@ -101,8 +101,38 @@ export function HomeDashboard() {
       <div className="mx-auto flex h-full min-h-0 min-w-[72rem] max-w-[96rem] flex-col bg-black px-6 pb-6 pt-2">
         <div className="grid grid-cols-[11fr_9fr] items-center gap-4">
           <div className="flex min-w-0 items-center gap-3 whitespace-nowrap">
-            <h1 className="font-mono text-xl font-semibold tracking-tight text-white">
+            <h1 className="flex items-center font-mono text-xl font-semibold tracking-tight text-white">
               VeriJoule<span className="italic">Core</span>
+              <span
+                tabIndex={0}
+                className="group/info relative ml-2 inline-flex cursor-default outline-none"
+                aria-label="VeriJoule Core proof-of-concept and disclaimer"
+              >
+                <span
+                  className="inline-flex size-[0.85rem] items-center justify-center border border-[#666666] text-[9px] font-light italic leading-none text-[#888888] transition-colors group-hover/info:border-white group-hover/info:text-white"
+                  aria-hidden="true"
+                >
+                  i
+                </span>
+                <span
+                  role="tooltip"
+                  className="pointer-events-none absolute left-0 top-full z-50 mt-1 block w-60 box-border whitespace-normal break-words border border-[#3d3d3d] bg-[#050505] px-2.5 py-2 font-mono text-[10px] font-normal not-italic leading-snug tracking-normal text-[#aaaaaa] opacity-0 transition-opacity group-hover/info:opacity-100 group-focus-within/info:opacity-100"
+                >
+                  <span className="block text-white">
+                    Proof of concept.
+                  </span>
+                  <span className="mt-1.5 block">
+                    Colorado PSCO net energy generation is tallied against each
+                    vintage ID and the quantity you retire. The State of Colorado
+                    is treated as a single faux facility for this demo.
+                  </span>
+                  <span className="mt-2 block border-t border-[#333333] pt-2 text-[#888888]">
+                    This is not a renewable energy certificate (REC). Nothing
+                    shown or executed here implies legal title, compliance, or
+                    market recognition of RECs.
+                  </span>
+                </span>
+              </span>
             </h1>
             <span className="font-mono text-xs font-light text-[#666666]">|</span>
             <p className="font-mono text-xs font-light uppercase tracking-[0.28em] text-[#666666]">

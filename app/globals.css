@@ -62,3 +62,25 @@ label[for],
 summary {
   cursor: pointer;
 }
+
+/* Minimal scrollbars — dark mono UI */
+.vj-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #3d3d3d #000000;
+}
+
+.vj-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.vj-scrollbar::-webkit-scrollbar-track {
+  background: #000000;
+}
+
+.vj-scrollbar::-webkit-scrollbar-thumb {
+  background: #3d3d3d;
+}
+
+.vj-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #666666;
+}

@@ -227,7 +227,7 @@ export function MyRetirementsPanel({ userAddress }: MyRetirementsPanelProps) {
           <span>total retired</span>
         </div>
 
-        <ul className="min-h-0 flex-1 divide-y divide-[#111111] overflow-y-auto overscroll-y-contain">
+        <ul className="vj-scrollbar min-h-0 flex-1 divide-y divide-[#111111] overflow-y-auto overscroll-y-contain">
           {summaries.map((summary) => {
             const isExpanded = expandedVintageId === summary.vintageId;
             const auditTrail = retiredByVintage.get(summary.vintageId) ?? [];

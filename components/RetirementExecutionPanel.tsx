@@ -86,7 +86,7 @@ export function RetirementExecutionPanel({
           <span className="sr-only">remove</span>
         </div>
 
-        <ul className="min-h-0 flex-1 divide-y divide-[#111111] overflow-y-auto overscroll-y-contain">
+        <ul className="vj-scrollbar min-h-0 flex-1 divide-y divide-[#111111] overflow-y-auto overscroll-y-contain">
           {lines.map((line) => {
             const isFocused = line.vintageId === focusedVintageId;
             return (
