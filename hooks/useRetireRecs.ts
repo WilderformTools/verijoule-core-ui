@@ -277,15 +277,15 @@ export function useRetireRecs({ lines }: UseRetireRecsOptions) {
       const retireParams =
         linesParsed.length === 1
           ? {
-              ...settlement,
-              functionName: "purchaseAndRetireRECs" as const,
-              args: [vintageIds[0]!, amounts[0]!] as const,
-            }
+            ...settlement,
+            functionName: "purchaseAndRetireRECs" as const,
+            args: [vintageIds[0]!, amounts[0]!] as const,
+          }
           : {
-              ...settlement,
-              functionName: "purchaseAndRetireBatchRECs" as const,
-              args: [vintageIds, amounts] as const,
-            };
+            ...settlement,
+            functionName: "purchaseAndRetireBatchRECs" as const,
+            args: [vintageIds, amounts] as const,
+          };
 
       const { request } = await simulateContract(config, {
         ...retireParams,
@@ -400,6 +400,7 @@ export function useRetireRecs({ lines }: UseRetireRecsOptions) {
     parsed,
     cost: preflight.cost,
     referencePrice:
-      settlementReferencePrice ?? preflightReads?.referencePrice,
+      (settlementReferencePrice as bigint | undefined) ??
+      preflightReads?.referencePrice,
   };
 }

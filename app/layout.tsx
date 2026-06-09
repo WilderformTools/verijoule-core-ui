@@ -9,6 +9,8 @@ const jetbrainsMono = JetBrains_Mono({
   variable: "--font-jetbrains-mono",
 });
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "VeriJoule Core",
   description: "Decentralized telemetry engine — Wilderform Tools LLC.",
