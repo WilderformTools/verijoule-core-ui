@@ -113,7 +113,7 @@ export function WalletButton({ onMyRetirementsClick }: WalletButtonProps) {
     <div className="flex w-full min-w-0 items-center justify-end gap-2">
       {!ready || isRestoringSession ? (
         <button type="button" disabled className={buttonClassName}>
-          BOOTING...
+          LOADING...
         </button>
       ) : isDisconnecting ? (
         <DisconnectSpinner />

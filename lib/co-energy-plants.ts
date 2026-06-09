@@ -15,11 +15,6 @@ export const CO_ENERGY_PLANTS: readonly CoEnergyPlant[] = [
     "kind": "wnd"
   },
   {
-    "lat": 40.990489,
-    "lng": -104.816686,
-    "kind": "wnd"
-  },
-  {
     "lat": 40.945911,
     "lng": -103.162028,
     "kind": "wnd"
@@ -872,11 +867,6 @@ export const CO_ENERGY_PLANTS: readonly CoEnergyPlant[] = [
   {
     "lat": 40.464272,
     "lng": -104.610156,
-    "kind": "sun"
-  },
-  {
-    "lat": 40.596,
-    "lng": -108.846,
     "kind": "sun"
   },
   {

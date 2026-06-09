@@ -1,9 +1,9 @@
 "use client";
 
 import type { FeatureCollection } from "geojson";
-import type { Map as MaplibreMap } from "maplibre-gl";
+import type { LngLatBoundsLike, Map as MaplibreMap } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { useLayoutEffect, useRef } from "react";
+import { useCallback, useLayoutEffect, useRef, useState } from "react";
 
 import { TerminalPanel } from "@/components/TerminalPanel";
 import { CO_ENERGY_PLANTS } from "@/lib/co-energy-plants";
@@ -12,7 +12,9 @@ import {
   MAP_ICON_SOLAR,
   MAP_ICON_WIND,
   solarPlantIconBitmap,
+  solarPlantIconDataUrl,
   windPlantIconBitmap,
+  windPlantIconDataUrl,
 } from "@/lib/map-plant-icons";
 import { COLORADO_STATE_GEOJSON } from "@/lib/verijoule-map-data";
 
@@ -47,6 +49,19 @@ const PLANT_SYMBOL_LAYOUT = {
   "icon-allow-overlap": true,
   "icon-ignore-placement": true,
 } as const;
+
+const LEGEND_ICON_PX = 16;
+
+const MAP_LEGEND_ITEMS = [
+  {
+    label: "Solar",
+    iconSrc: solarPlantIconDataUrl(LEGEND_ICON_PX),
+  },
+  {
+    label: "Wind",
+    iconSrc: windPlantIconDataUrl(LEGEND_ICON_PX),
+  },
+] as const;
 
 /** Run `cb` once the element has a real layout size (MapLibre needs non-zero box at init). */
 function waitForNonZeroSize(el: HTMLElement, cb: () => void): () => void {
@@ -83,6 +98,20 @@ export type MapContainerProps = {
 
 export function MapContainer({ className }: MapContainerProps) {
   const mapElRef = useRef<HTMLDivElement | null>(null);
+  const mapRef = useRef<MaplibreMap | null>(null);
+  const fitBoundsRef = useRef<LngLatBoundsLike | null>(null);
+  const [mapReady, setMapReady] = useState(false);
+
+  const resetMapView = useCallback(() => {
+    const m = mapRef.current;
+    const bounds = fitBoundsRef.current;
+    if (!m || !bounds) return;
+    m.fitBounds(bounds, {
+      padding: FIT_BOUNDS_PADDING,
+      maxZoom: 10.5,
+      duration: 450,
+    });
+  }, []);
 
   useLayoutEffect(() => {
     const el = mapElRef.current;
@@ -94,6 +123,7 @@ export function MapContainer({ className }: MapContainerProps) {
     const coBounds = featureCollectionLngLatBounds(COLORADO_STATE_GEOJSON);
     const fitBounds = expandLngLatBounds(coBounds, 1.16);
     const maxBounds = expandLngLatBounds(coBounds, 1.42);
+    fitBoundsRef.current = fitBounds;
 
     let cancelled = false;
     let map: MaplibreMap | null = null;
@@ -174,9 +204,9 @@ export function MapContainer({ className }: MapContainerProps) {
         kind: "sun" | "wnd";
         load: () => Promise<ImageBitmap>;
       }[] = [
-        { id: MAP_ICON_SOLAR, kind: "sun", load: solarPlantIconBitmap },
-        { id: MAP_ICON_WIND, kind: "wnd", load: windPlantIconBitmap },
-      ];
+          { id: MAP_ICON_SOLAR, kind: "sun", load: solarPlantIconBitmap },
+          { id: MAP_ICON_WIND, kind: "wnd", load: windPlantIconBitmap },
+        ];
 
       for (const { id, kind, load } of plantIcons) {
         if (cancelled) return;
@@ -233,6 +263,7 @@ export function MapContainer({ className }: MapContainerProps) {
         pitchWithRotate: false,
         touchPitch: false,
       });
+      mapRef.current = map;
 
       map.on("error", (e) => {
         console.error("[MapContainer]", e);
@@ -252,7 +283,10 @@ export function MapContainer({ className }: MapContainerProps) {
       });
 
       map.once("load", () => {
-        if (map) onMapLoad(map);
+        if (map) {
+          onMapLoad(map);
+          if (!cancelled) setMapReady(true);
+        }
       });
 
       map.once("idle", () => {
@@ -280,6 +314,7 @@ export function MapContainer({ className }: MapContainerProps) {
 
     return () => {
       cancelled = true;
+      setMapReady(false);
       cancelAnimationFrame(resizeRaf);
       disposeWait?.();
       roMap?.disconnect();
@@ -287,6 +322,7 @@ export function MapContainer({ className }: MapContainerProps) {
         map.remove();
         map = null;
       }
+      mapRef.current = null;
     };
   }, []);
 
@@ -296,12 +332,46 @@ export function MapContainer({ className }: MapContainerProps) {
       className={className}
       contentClassName="min-h-0 p-0"
     >
-      <div
-        ref={mapElRef}
-        className="h-full w-full flex-1 overflow-hidden rounded-none bg-[#0a0a0a]"
-        role="presentation"
-        aria-label="Colorado map with energy facilities"
-      />
+      <div className="relative h-full w-full flex-1">
+        <div
+          ref={mapElRef}
+          className="h-full w-full overflow-hidden rounded-none bg-[#0a0a0a]"
+          role="presentation"
+          aria-label="Colorado map with energy facilities"
+        />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex items-end justify-between gap-2 p-2">
+          <div
+            className="pointer-events-auto border border-[#3d3d3d] bg-[#050505]/90 px-2 py-1.5 font-mono text-[10px] uppercase tracking-[0.18em] text-[#cccccc]"
+            role="group"
+            aria-label="Map legend"
+          >
+            <ul className="m-0 flex list-none flex-col gap-1 p-0">
+              {MAP_LEGEND_ITEMS.map(({ label, iconSrc }) => (
+                <li key={label} className="flex items-center gap-1.5">
+                  {/* eslint-disable-next-line @next/next/no-img-element -- data URL matches MapLibre plant icons */}
+                  <img
+                    src={iconSrc}
+                    alt=""
+                    width={LEGEND_ICON_PX}
+                    height={LEGEND_ICON_PX}
+                    className="shrink-0"
+                  />
+                  <span>{label}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <button
+            type="button"
+            onClick={resetMapView}
+            disabled={!mapReady}
+            className="pointer-events-auto border border-[#3d3d3d] bg-[#050505]/90 px-2 py-1 font-mono text-[10px] uppercase tracking-[0.18em] text-white transition-colors hover:bg-white hover:text-black disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-[#050505]/90 disabled:hover:text-white"
+            aria-label="Reset map view"
+          >
+            Reset
+          </button>
+        </div>
+      </div>
     </TerminalPanel>
   );
 }

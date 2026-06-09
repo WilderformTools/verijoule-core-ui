@@ -2,14 +2,92 @@
 
 import { useWallets } from "@privy-io/react-auth";
 import { useSetActiveWallet } from "@privy-io/wagmi";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { Address } from "viem";
 import { useAccount, useConfig } from "wagmi";
 
 import { switchWalletAccount } from "@/lib/switchWalletAccount";
 
+const SWITCH_SPINNER_MS = 300;
+
 function truncateAddress(value: string): string {
   return `${value.slice(0, 6)}...${value.slice(-4)}`;
+}
+
+function AccountSwitchSpinner() {
+  return (
+    <svg
+      viewBox="0 0 14 14"
+      width={14}
+      height={14}
+      aria-hidden
+      className="block shrink-0 animate-wallet-disconnect"
+    >
+      <circle
+        cx="7"
+        cy="7"
+        r="5"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.25"
+        strokeDasharray="8 24"
+      />
+    </svg>
+  );
+}
+
+function AccountLabel({
+  address,
+  isSwitching,
+  labelClassName,
+  onClick,
+  menuOpen,
+}: {
+  address: Address;
+  isSwitching: boolean;
+  labelClassName: string;
+  onClick?: () => void;
+  menuOpen?: boolean;
+}) {
+  const truncated = truncateAddress(address);
+  const content = (
+    <span className="relative inline-flex items-center justify-center">
+      <span className={isSwitching ? "invisible" : undefined} aria-hidden={isSwitching}>
+        {truncated}
+      </span>
+      {isSwitching ? (
+        <span
+          className="absolute inset-0 flex items-center justify-center"
+          role="status"
+          aria-live="polite"
+          aria-label="Switching account"
+        >
+          <AccountSwitchSpinner />
+        </span>
+      ) : null}
+    </span>
+  );
+
+  if (onClick) {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        disabled={isSwitching}
+        aria-expanded={menuOpen}
+        aria-haspopup="listbox"
+        className={`${labelClassName} transition-colors hover:text-[#3d3d3d] disabled:cursor-default disabled:hover:text-white`}
+      >
+        {content}
+      </button>
+    );
+  }
+
+  return (
+    <span className={`${labelClassName} inline-block cursor-default`}>
+      {content}
+    </span>
+  );
 }
 
 const connectedBadgeClassName =
@@ -61,7 +139,10 @@ type AccountMenuProps = {
 export function AccountMenu({ address, labelClassName }: AccountMenuProps) {
   const [open, setOpen] = useState(false);
   const [accounts, setAccounts] = useState<readonly Address[]>([]);
+  const [isSwitching, setIsSwitching] = useState(false);
+  const [pendingAddress, setPendingAddress] = useState<Address | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const switchStartedAt = useRef<number | null>(null);
   const config = useConfig();
   const { address: activeAddress, connector } = useAccount();
   const { wallets, ready: walletsReady } = useWallets();
@@ -116,50 +197,87 @@ export function AccountMenu({ address, labelClassName }: AccountMenuProps) {
     accounts.length + externalWallets.length > 1 ||
     uniqueWallets.length > 1;
 
+  const finishSwitch = useCallback(() => {
+    setIsSwitching(false);
+    setPendingAddress(null);
+    switchStartedAt.current = null;
+  }, []);
+
+  useEffect(() => {
+    if (!isSwitching || !pendingAddress) return;
+    if (pendingAddress.toLowerCase() !== connectedAddress.toLowerCase()) return;
+
+    const elapsed = switchStartedAt.current
+      ? Date.now() - switchStartedAt.current
+      : 0;
+    const remaining = Math.max(0, SWITCH_SPINNER_MS - elapsed);
+    const timer = window.setTimeout(finishSwitch, remaining);
+
+    return () => window.clearTimeout(timer);
+  }, [isSwitching, pendingAddress, connectedAddress, finishSwitch]);
+
   const handleSelect = async (target: Address) => {
     setOpen(false);
     if (target.toLowerCase() === connectedAddress.toLowerCase()) return;
 
-    const permitted = connector
-      ? accounts.length > 0
-        ? accounts
-        : await connector.getAccounts()
-      : accounts;
+    setPendingAddress(target);
+    setIsSwitching(true);
+    switchStartedAt.current = Date.now();
 
-    if (
-      permitted.some((account) => account.toLowerCase() === target.toLowerCase())
-    ) {
-      switchWalletAccount(config, target, permitted);
-      return;
-    }
+    try {
+      const permitted = connector
+        ? accounts.length > 0
+          ? accounts
+          : await connector.getAccounts()
+        : accounts;
 
-    const wallet = uniqueWallets.find(
-      (entry) => entry.address.toLowerCase() === target.toLowerCase(),
-    );
-    if (wallet) {
-      await setActiveWallet(wallet);
+      if (
+        permitted.some(
+          (account) => account.toLowerCase() === target.toLowerCase(),
+        )
+      ) {
+        switchWalletAccount(config, target, permitted);
+        return;
+      }
+
+      const wallet = uniqueWallets.find(
+        (entry) => entry.address.toLowerCase() === target.toLowerCase(),
+      );
+      if (wallet) {
+        await setActiveWallet(wallet);
+        return;
+      }
+
+      finishSwitch();
+    } catch {
+      finishSwitch();
     }
   };
 
+  const displayAddress = pendingAddress ?? connectedAddress;
+
   if (!canSwitch) {
     return (
-      <span className={`${labelClassName} inline-block cursor-default`}>
-        {truncateAddress(connectedAddress)}
-      </span>
+      <AccountLabel
+        address={displayAddress}
+        isSwitching={isSwitching}
+        labelClassName={labelClassName}
+      />
     );
   }
 
   return (
     <div ref={containerRef} className="relative">
-      <button
-        type="button"
-        onClick={() => setOpen((current) => !current)}
-        aria-expanded={open}
-        aria-haspopup="listbox"
-        className={`${labelClassName} transition-colors hover:text-[#3d3d3d]`}
-      >
-        {truncateAddress(connectedAddress)}
-      </button>
+      <AccountLabel
+        address={displayAddress}
+        isSwitching={isSwitching}
+        labelClassName={labelClassName}
+        menuOpen={open}
+        onClick={() => {
+          if (isSwitching) return;
+          setOpen((current) => !current);
+        }}
+      />
       {open ? (
         <div
           role="listbox"

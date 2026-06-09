@@ -30,13 +30,13 @@ export function openBlobInNewTab(blob: Blob): void {
     throw new Error("allow pop-ups to view the certificate");
   }
 
-  tab.document.title = "VeriJoule Certificate";
+  tab.document.title = "VeriJouleCore Retirement Record";
   tab.document.body.style.margin = "0";
   tab.document.body.style.background = "#000000";
 
   const frame = tab.document.createElement("iframe");
   frame.src = url;
-  frame.title = "VeriJoule Certificate";
+  frame.title = "VeriJouleCore Retirement Record";
   frame.style.cssText =
     "position:fixed;inset:0;width:100%;height:100%;border:0;background:#ffffff";
   tab.document.body.appendChild(frame);

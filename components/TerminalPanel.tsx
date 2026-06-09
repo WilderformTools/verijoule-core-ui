@@ -21,7 +21,7 @@ export function TerminalPanel({
         {title}
       </p>
       <div
-        className={`flex min-h-0 flex-1 flex-col overflow-hidden p-4 ${contentClassName ?? ""}`}
+        className={`flex min-h-0 flex-1 flex-col overflow-hidden ${contentClassName ?? "p-4"}`}
       >
         {children}
       </div>

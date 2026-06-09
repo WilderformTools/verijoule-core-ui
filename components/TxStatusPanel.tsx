@@ -24,16 +24,19 @@ export function TxStatusPanel({
 
   if (!hasContent) {
     return (
-      <div className="flex min-h-0 flex-1 items-center justify-center text-center text-sm uppercase tracking-[0.24em] text-[#8a8a8a]">
+      <div className="flex min-h-0 min-w-0 flex-1 items-center justify-center text-center text-sm uppercase tracking-[0.24em] text-[#8a8a8a]">
         tx status
       </div>
     );
   }
 
+  const longTextClass =
+    "min-w-0 break-all [overflow-wrap:anywhere] leading-relaxed";
+
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto text-left">
+    <div className="flex min-h-0 min-w-0 w-full flex-1 flex-col gap-3 overflow-x-hidden overflow-y-auto text-left">
       <p
-        className={`text-sm uppercase tracking-[0.24em] ${
+        className={`${longTextClass} text-sm uppercase tracking-[0.24em] ${
           phase === "error"
             ? "text-[#cfcfcf]"
             : phase === "success"
@@ -47,7 +50,9 @@ export function TxStatusPanel({
       {warnings.length > 0 ? (
         <ul className="space-y-1 text-[10px] uppercase tracking-[0.18em] text-[#666666]">
           {warnings.map((warning) => (
-            <li key={warning}>{warning}</li>
+            <li key={warning} className={longTextClass}>
+              {warning}
+            </li>
           ))}
         </ul>
       ) : null}
@@ -55,7 +60,9 @@ export function TxStatusPanel({
       {errors.length > 0 ? (
         <ul className="space-y-1 text-[10px] uppercase tracking-[0.18em] text-[#cfcfcf]">
           {errors.map((error) => (
-            <li key={error}>{error}</li>
+            <li key={error} className={longTextClass}>
+              {error}
+            </li>
           ))}
         </ul>
       ) : null}
@@ -65,7 +72,7 @@ export function TxStatusPanel({
           href={`${SEPOLIA_EXPLORER}${txHash}`}
           target="_blank"
           rel="noreferrer"
-          className="truncate text-[10px] uppercase tracking-[0.18em] text-white underline decoration-[#3d3d3d] underline-offset-2 hover:decoration-white"
+          className={`${longTextClass} block text-[10px] uppercase tracking-[0.18em] text-white underline decoration-[#3d3d3d] underline-offset-2 hover:decoration-white`}
         >
           {txHash}
         </a>

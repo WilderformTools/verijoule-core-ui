@@ -3,6 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useCallback, useState } from "react";
 
+import { PonderSourceLabel } from "@/components/PonderSourceLabel";
 import {
   buildCertificateData,
   formatBigInt,
@@ -215,7 +216,7 @@ export function MyRetirementsPanel({ userAddress }: MyRetirementsPanelProps) {
   };
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-hidden">
+    <div className="flex min-h-0 flex-1 flex-col gap-3">
       <div className="flex shrink-0 items-center justify-between border-b border-[#1d1d1d] pb-2 text-[10px] uppercase tracking-[0.22em] text-[#666666]">
         <span>{summaries.length} retired vintages</span>
         <span>{formatBigInt(totalRetired.toString())} mwh retired</span>
@@ -262,7 +263,7 @@ export function MyRetirementsPanel({ userAddress }: MyRetirementsPanelProps) {
                     >
                       {isGenerating
                         ? "generating…"
-                        : "generate compliance certificate"}
+                        : "generate retirement record"}
                     </button>
 
                     {certificateError?.vintageId === summary.vintageId ? (
@@ -315,7 +316,7 @@ export function MyRetirementsPanel({ userAddress }: MyRetirementsPanelProps) {
       </div>
 
       <div className="flex shrink-0 items-center justify-between text-[10px] uppercase tracking-[0.22em] text-[#666666]">
-        <span>source: ponder graphql</span>
+        <PonderSourceLabel />
       </div>
     </div>
   );

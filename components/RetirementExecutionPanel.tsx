@@ -71,7 +71,7 @@ export function RetirementExecutionPanel({
       : null;
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-hidden">
+    <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-hidden">
       <div className="flex shrink-0 items-center justify-between border-b border-[#1d1d1d] pb-2 text-[10px] uppercase tracking-[0.22em] text-[#666666]">
         <span>{lines.length} line{lines.length === 1 ? "" : "s"}</span>
         <span>
@@ -155,15 +155,19 @@ export function RetirementExecutionPanel({
         </ul>
       </div>
 
-      <div className="flex shrink-0 flex-col gap-1 text-[10px] uppercase tracking-[0.22em] text-[#666666]">
-        {estimatedUsdc !== null ? (
-          <span>est. cost: {formatUsdcBaseUnits(estimatedUsdc)} USDC</span>
-        ) : (
-          <span>est. cost: —</span>
-        )}
-        {referencePrice !== undefined ? (
-          <span>price: {formatUsdcBaseUnits(referencePrice)} USDC / MWh</span>
-        ) : null}
+      <div className="shrink-0 text-[10px] uppercase tracking-[0.22em] text-[#666666]">
+        <span>
+          {estimatedUsdc !== null
+            ? `est. cost: ${formatUsdcBaseUnits(estimatedUsdc)} USDC`
+            : "est. cost: —"}
+          {referencePrice !== undefined ? (
+            <>
+              {" "}
+              <span aria-hidden="true">·</span> price:{" "}
+              {formatUsdcBaseUnits(referencePrice)} USDC / MWh
+            </>
+          ) : null}
+        </span>
       </div>
     </div>
   );

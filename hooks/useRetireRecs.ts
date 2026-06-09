@@ -12,6 +12,7 @@ import {
   useAccount,
   useChainId,
   useConfig,
+  useReadContract,
   useReadContracts,
   useSwitchChain,
 } from "wagmi";
@@ -58,6 +59,13 @@ export function useRetireRecs({ lines }: UseRetireRecsOptions) {
     () => (clientParse.ok ? clientParse.parsed : []),
     [clientParse],
   );
+
+  const { data: settlementReferencePrice } = useReadContract({
+    ...settlement,
+    functionName: "getReferencePrice",
+    chainId: sepolia.id,
+    query: { enabled: lines.length > 0 },
+  });
 
   const vintageContracts = useMemo(() => {
     if (!parsed.length) return [];
@@ -391,6 +399,7 @@ export function useRetireRecs({ lines }: UseRetireRecsOptions) {
     warnings: preflight.warnings,
     parsed,
     cost: preflight.cost,
-    referencePrice: preflightReads?.referencePrice,
+    referencePrice:
+      settlementReferencePrice ?? preflightReads?.referencePrice,
   };
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import { PonderSourceLabel } from "@/components/PonderSourceLabel";
 
 export type RecVintageBalance = {
   vintageId: string;
@@ -129,7 +130,7 @@ export function RecLedgerPanel({
   );
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-hidden">
+    <div className="flex min-h-0 flex-1 flex-col gap-3">
       <div className="flex shrink-0 items-center justify-between border-b border-[#1d1d1d] pb-2 text-[10px] uppercase tracking-[0.22em] text-[#666666]">
         <span>{vintages.length} active vintages</span>
         <span>{formatBigInt(totalAvailable.toString())} mwh live</span>
@@ -166,7 +167,7 @@ export function RecLedgerPanel({
       </div>
 
       <div className="flex shrink-0 items-center justify-between text-[10px] uppercase tracking-[0.22em] text-[#666666]">
-        <span>source: ponder graphql</span>
+        <PonderSourceLabel />
         <span>refresh: 15s</span>
       </div>
     </div>

@@ -55,12 +55,12 @@ export function sepoliaTxUrl(txHash: string): string {
   return `https://sepolia.etherscan.io/tx/${normalized}`;
 }
 
-/** Insert line breaks so full tx hashes fit within the PDF content width. */
-export function wrapTxHashForPdf(hash: string, charsPerLine = 38): string {
-  const normalized = hash.startsWith("0x") ? hash : `0x${hash}`;
-  const lines: string[] = [];
-  for (let i = 0; i < normalized.length; i += charsPerLine) {
-    lines.push(normalized.slice(i, i + charsPerLine));
-  }
-  return lines.join("\n");
+export function sepoliaContractUrl(address: string): string {
+  const normalized = address.startsWith("0x") ? address : `0x${address}`;
+  return `https://sepolia.etherscan.io/address/${normalized}`;
+}
+
+/** Normalize tx hash for PDF display (single line, no wrapping). */
+export function wrapTxHashForPdf(hash: string): string {
+  return hash.startsWith("0x") ? hash : `0x${hash}`;
 }

@@ -1,36 +1,34 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# VeriJouleCore User Interface
 
-## Getting Started
+The execution interface and dashboard for VeriJouleCore, enabling cryptographic REC retirements and verifiable record generation.
 
-First, run the development server:
+**Live Environment:** [verijoule.wilderform.tools](https://verijoule.wilderform.tools)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## What This Is
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The frontend interface for Wilderform Tools' VeriJouleCore architecture. It provides a browser-based dashboard where users connect a wallet via Privy, browse regional wind and solar facilities on an interactive MapLibre map (2024 EIA Colorado solar & wind farms), and view live REC vintages aggregated by the indexer. Users can execute cryptographic retirements against the on-chain settlement contract and natively download structured PDF records of their retirement history.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## How It Fits in the System
 
-This app uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) with JetBrains Mono (`app/layout.tsx`).
+- **[VeriJouleCore (Smart Contracts & Chainlink CRE)](https://github.com/WilderformTools/verijoule-core)** — The foundational logic layer. Contains the settlement smart contracts deployed on Sepolia; all cryptographic writes execute through wagmi/viem directly to these proxies.
+- **[VeriJouleCore Ponder Indexer](https://github.com/WilderformTools/verijoule-core-indexer)** — The asynchronous indexing layer. This UI consumes the indexer's GraphQL API to populate the active REC ledger and historical user retirement panels without taxing RPC nodes.
 
-## Learn More
+*Note: The UI does not interact with the database directly or natively store state. On-chain reads and transaction simulations gate all execution logic; the indexer strictly powers display metrics and certificate generation.*
 
-To learn more about Next.js, take a look at the following resources:
+## Tech Stack
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **Framework:** Next.js (App Router), React, TypeScript
+- **Styling & Mapping:** Tailwind CSS, MapLibre GL
+- **Web3 Integration:** Privy, wagmi, viem
+- **Record Generation:** `@react-pdf/renderer`
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Deployment Architecture
 
-## Deploy on Vercel
+- **Hosting Environment:** Vercel
+- **Authentication Gateway:** Privy
+- **Target Network:** Ethereum Sepolia Testnet
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Important Notes
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Proof of Concept:** This is a strictly technical architecture demonstration operating on the Sepolia testnet with test USDC. The interface acts as a visual layer over public on-chain data. The tokens and retirements executed within this tool do not represent legally recognized RECs or regulatory compliance instruments.
+- **Client-Side Verification:** PDF certificates are generated natively on the client from indexed public data. All retirements can be independently verified on-chain utilizing the transaction hashes provided in the audit trail.

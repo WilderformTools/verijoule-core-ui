@@ -14,7 +14,6 @@ export type CertificateData = {
   network: string;
   recContractAddress: string;
   settlementContractAddress: string;
-  plantCode: string | null;
   auditTrail: CertificateAuditRow[];
 };
 

@@ -10,6 +10,7 @@ import {
 import {
   formatBigInt,
   formatTimestamp,
+  sepoliaContractUrl,
   sepoliaTxUrl,
   wrapTxHashForPdf,
 } from "./format";
@@ -85,52 +86,32 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 10,
   },
-  auditList: {
-    borderWidth: 1,
-    borderColor: "#333333",
+  linkValue: {
+    flex: 1,
+    fontSize: 10,
+    color: "#000000",
+    textDecoration: "underline",
+  },
+  hashLinkValue: {
+    flex: 1,
+    fontSize: 8,
+    letterSpacing: 0.1,
+    color: "#000000",
+    textDecoration: "underline",
   },
   auditEntry: {
-    paddingHorizontal: 8,
-    paddingVertical: 8,
+    marginBottom: 12,
+    paddingBottom: 12,
     borderBottomWidth: 1,
     borderBottomColor: "#dddddd",
   },
   auditEntryLast: {
+    marginBottom: 0,
+    paddingBottom: 0,
     borderBottomWidth: 0,
   },
-  auditMeta: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    marginBottom: 6,
-    gap: 12,
-  },
-  auditDate: {
-    flex: 1,
-    fontSize: 8,
-    color: "#333333",
-  },
-  auditQty: {
-    fontSize: 8,
-    fontWeight: 700,
-    textTransform: "uppercase",
-  },
-  auditHashLabel: {
-    fontSize: 7,
-    letterSpacing: 1.2,
-    textTransform: "uppercase",
-    color: "#666666",
-    marginBottom: 3,
-  },
-  auditHash: {
-    fontSize: 7,
-    lineHeight: 1.4,
-    letterSpacing: 0.2,
-    color: "#000000",
-    textDecoration: "underline",
-  },
   auditViewerHint: {
-    marginTop: 8,
+    marginTop: 4,
     fontSize: 6.5,
     letterSpacing: 0.6,
     lineHeight: 1.4,
@@ -160,11 +141,27 @@ type ComplianceCertificateDocumentProps = {
   data: CertificateData;
 };
 
-function FieldRow({ label, value }: { label: string; value: string }) {
+function FieldRow({
+  label,
+  value,
+  href,
+  linkStyle,
+}: {
+  label: string;
+  value: string;
+  href?: string;
+  linkStyle?: typeof styles.linkValue;
+}) {
   return (
     <View style={styles.row}>
       <Text style={styles.label}>{label}</Text>
-      <Text style={styles.value}>{value}</Text>
+      {href ? (
+        <Link src={href} style={linkStyle ?? styles.linkValue}>
+          {value}
+        </Link>
+      ) : (
+        <Text style={styles.value}>{value}</Text>
+      )}
     </View>
   );
 }
@@ -174,7 +171,7 @@ export function ComplianceCertificateDocument({
 }: ComplianceCertificateDocumentProps) {
   return (
     <Document
-      title={`VeriJoule Certificate ${data.certificateId}`}
+      title={`VeriJouleCore Retirement Record ${data.certificateId}`}
       author="Wilderform Tools LLC"
     >
       <Page size="LETTER" style={styles.page}>
@@ -182,17 +179,17 @@ export function ComplianceCertificateDocument({
           <View style={styles.header}>
             <Text style={styles.brand}>VeriJoule Core</Text>
             <Text style={styles.brandSub}>Wilderform Tools LLC</Text>
-            <Text style={styles.title}>REC Retirement Compliance Certificate</Text>
+            <Text style={styles.title}>REC Retirement Record</Text>
           </View>
 
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Certificate</Text>
             <FieldRow label="Certificate ID" value={data.certificateId} />
-            <FieldRow label="Issued (UTC)" value={data.issuedAtUtc} />
+            <FieldRow label="Generated (UTC)" value={data.issuedAtUtc} />
           </View>
 
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Retirement</Text>
+            <Text style={styles.sectionTitle}>Retirement Details</Text>
             <FieldRow label="Vintage ID" value={data.vintageId} />
             {data.vintagePeriod ? (
               <FieldRow label="Vintage Period" value={data.vintagePeriod} />
@@ -205,16 +202,19 @@ export function ComplianceCertificateDocument({
           </View>
 
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Chain</Text>
+            <Text style={styles.sectionTitle}>Blockchain Details</Text>
             <FieldRow label="Network" value={data.network} />
-            <FieldRow label="REC Contract" value={data.recContractAddress} />
             <FieldRow
-              label="Settlement"
-              value={data.settlementContractAddress}
+              label="REC Contract"
+              value={data.recContractAddress}
+              href={sepoliaContractUrl(data.recContractAddress)}
+              linkStyle={styles.hashLinkValue}
             />
             <FieldRow
-              label="Plant Code"
-              value={data.plantCode ?? "unavailable"}
+              label="Settlement Contract"
+              value={data.settlementContractAddress}
+              href={sepoliaContractUrl(data.settlementContractAddress)}
+              linkStyle={styles.hashLinkValue}
             />
           </View>
 
@@ -225,7 +225,7 @@ export function ComplianceCertificateDocument({
                 no individual transactions indexed
               </Text>
             ) : (
-              <View style={styles.auditList}>
+              <View>
                 {data.auditTrail.map((entry, index) => {
                   const isLast = index === data.auditTrail.length - 1;
                   return (
@@ -237,21 +237,20 @@ export function ComplianceCertificateDocument({
                           : styles.auditEntry
                       }
                     >
-                      <View style={styles.auditMeta}>
-                        <Text style={styles.auditDate}>
-                          {formatTimestamp(entry.timestamp)}
-                        </Text>
-                        <Text style={styles.auditQty}>
-                          {formatBigInt(entry.quantity)} mwh
-                        </Text>
-                      </View>
-                      <Text style={styles.auditHashLabel}>transaction</Text>
-                      <Link
-                        src={sepoliaTxUrl(entry.txHash)}
-                        style={styles.auditHash}
-                      >
-                        {wrapTxHashForPdf(entry.txHash)}
-                      </Link>
+                      <FieldRow
+                        label="Quantity"
+                        value={`${formatBigInt(entry.quantity)} MWh`}
+                      />
+                      <FieldRow
+                        label="Timestamp"
+                        value={formatTimestamp(entry.timestamp)}
+                      />
+                      <FieldRow
+                        label="Tx Hash"
+                        value={wrapTxHashForPdf(entry.txHash)}
+                        href={sepoliaTxUrl(entry.txHash)}
+                        linkStyle={styles.hashLinkValue}
+                      />
                     </View>
                   );
                 })}
@@ -264,10 +263,7 @@ export function ComplianceCertificateDocument({
           </View>
 
           <Text style={styles.footer}>
-            This certificate summarizes REC retirements recorded on-chain and
-            indexed by VeriJoule Core. It is provided for informational
-            purposes only and does not constitute legal, regulatory, or
-            compliance advice.
+            This document is a technical record of on-chain retirements generated by VeriJoule Core for demonstration purposes only. It does not represent legally recognized Renewable Energy Certificates (RECs), environmental attributes, or compliance instruments. This certificate has no regulatory or market value.
           </Text>
         </View>
       </Page>

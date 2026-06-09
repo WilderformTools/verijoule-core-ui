@@ -4,6 +4,7 @@ import { usePrivy } from "@privy-io/react-auth";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAccount } from "wagmi";
 import { MapContainer } from "@/components/MapContainer";
+import { InfoHexTooltip } from "@/components/InfoHexTooltip";
 import { MyRetirementsPanel } from "@/components/MyRetirementsPanel";
 import {
   RecLedgerPanel,
@@ -103,36 +104,22 @@ export function HomeDashboard() {
           <div className="flex min-w-0 items-center gap-3 whitespace-nowrap">
             <h1 className="flex items-center font-mono text-xl font-semibold tracking-tight text-white">
               VeriJoule<span className="italic">Core</span>
-              <span
-                tabIndex={0}
-                className="group/info relative ml-2 inline-flex cursor-default outline-none"
-                aria-label="VeriJoule Core proof-of-concept and disclaimer"
+              <InfoHexTooltip
+                ariaLabel="VeriJoule Core proof-of-concept and disclaimer"
+                className="ml-2"
               >
-                <span
-                  className="inline-flex size-[0.85rem] items-center justify-center border border-[#666666] text-[9px] font-light italic leading-none text-[#888888] transition-colors group-hover/info:border-white group-hover/info:text-white"
-                  aria-hidden="true"
-                >
-                  i
+                <span className="block text-white">VeriJouleCore | Proof of Concept
                 </span>
-                <span
-                  role="tooltip"
-                  className="pointer-events-none absolute left-0 top-full z-50 mt-1 block w-60 box-border whitespace-normal break-words border border-[#3d3d3d] bg-[#050505] px-2.5 py-2 font-mono text-[10px] font-normal not-italic leading-snug tracking-normal text-[#aaaaaa] opacity-0 transition-opacity group-hover/info:opacity-100 group-focus-within/info:opacity-100"
-                >
-                  <span className="block text-white">
-                    Proof of concept.
-                  </span>
-                  <span className="mt-1.5 block">
-                    Colorado PSCO net energy generation is tallied against each
-                    vintage ID and the quantity you retire. The State of Colorado
-                    is treated as a single faux facility for this demo.
-                  </span>
-                  <span className="mt-2 block border-t border-[#333333] pt-2 text-[#888888]">
-                    This is not a renewable energy certificate (REC). Nothing
-                    shown or executed here implies legal title, compliance, or
-                    market recognition of RECs.
-                  </span>
+                <span className="mt-1.5 block">
+                  This interface demonstrates a technical pipeline for natively originating and retiring Renewable Energy Certificates (RECs) from public grid data.
                 </span>
-              </span>
+                <span className="mt-2 block border-t border-[#333333] pt-2 text-[#888888]">
+                  The tool pulls daily net solar and wind generation data for the PSCO (Public Service Company of Colorado) balancing authority directly from the U.S. EIA. It aggregates this physical production into vintage IDs and mints matching ERC-1155 tokens on the Sepolia testnet. For this technical demonstration, the entire state of Colorado is treated as a single unified facility.
+                </span>
+                <span className="mt-2 block border-t border-[#333333] pt-2 text-[#888888]">
+                  Disclaimer: This is a technical proof of concept only. The tokens minted and retired within this tool do not represent legally recognized RECs, regulatory compliance instruments, or environmental attributes with market value.
+                </span>
+              </InfoHexTooltip>
             </h1>
             <span className="font-mono text-xs font-light text-[#666666]">|</span>
             <p className="font-mono text-xs font-light uppercase tracking-[0.28em] text-[#666666]">
@@ -164,7 +151,11 @@ export function HomeDashboard() {
           </div>
 
           <div className="grid min-h-0 flex-1 grid-cols-[11fr_9fr] gap-4">
-            <TerminalPanel title="Retirement Execution Block" className="min-h-0">
+            <TerminalPanel
+              title="Retirement Execution Block"
+              className="min-h-0"
+              contentClassName="flex min-h-0 flex-1 flex-col overflow-hidden px-4 pt-4 pb-2"
+            >
               <RetirementExecutionPanel
                 lines={cartLines}
                 focusedVintageId={focusedVintageId}
@@ -173,8 +164,8 @@ export function HomeDashboard() {
                 onRemoveLine={handleRemoveLine}
               />
             </TerminalPanel>
-            <div className="flex min-h-0 flex-col gap-4">
-              <TerminalPanel title="Tx Status" className="min-h-0 flex-[0.6] basis-0">
+            <div className="flex min-h-0 min-w-0 flex-col gap-4">
+              <TerminalPanel title="Tx Status" className="min-h-0 min-w-0 flex-[0.6] basis-0">
                 <TxStatusPanel
                   phase={phase}
                   statusLabel={statusLabel}
@@ -219,7 +210,7 @@ export function HomeDashboard() {
             <TerminalPanel
               title="My Retirements"
               className="h-full min-h-0"
-              contentClassName="flex min-h-0 flex-1 flex-col"
+              contentClassName="flex min-h-0 flex-1 flex-col p-4"
             >
               <div id="my-retirements-title" className="sr-only">
                 My Retirements
