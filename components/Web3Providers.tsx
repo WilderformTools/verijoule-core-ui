@@ -37,12 +37,15 @@ export function Web3Providers({ children }: Web3ProvidersProps) {
           accentColor: "#FFFFFF",
           // Privy runtime accepts null here, but current SDK typings require string/ReactElement.
           logo: null as unknown as string,
+          // Popular wallets first, then other detected extensions, then WalletConnect fallback.
           walletList: [
-            "detected_ethereum_wallets",
             "metamask",
-            "rabby_wallet",
             "coinbase_wallet",
+            "rainbow",
+            "detected_ethereum_wallets",
+            "wallet_connect_qr",
           ],
+          walletChainType: "ethereum-only",
         },
         embeddedWallets: {
           ethereum: {
