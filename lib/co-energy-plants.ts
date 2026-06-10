@@ -700,11 +700,6 @@ export const CO_ENERGY_PLANTS: readonly CoEnergyPlant[] = [
     "kind": "sun"
   },
   {
-    "lat": 40.613557,
-    "lng": -103.233735,
-    "kind": "sun"
-  },
-  {
     "lat": 40.317966,
     "lng": -104.770747,
     "kind": "sun"
@@ -720,11 +715,6 @@ export const CO_ENERGY_PLANTS: readonly CoEnergyPlant[] = [
     "kind": "sun"
   },
   {
-    "lat": 39.414671,
-    "lng": -108.090731,
-    "kind": "sun"
-  },
-  {
     "lat": 40.266898,
     "lng": -103.657514,
     "kind": "sun"
@@ -732,11 +722,6 @@ export const CO_ENERGY_PLANTS: readonly CoEnergyPlant[] = [
   {
     "lat": 40.266898,
     "lng": -103.657514,
-    "kind": "sun"
-  },
-  {
-    "lat": 40.266856,
-    "lng": -103.65937,
     "kind": "sun"
   },
   {
@@ -755,8 +740,18 @@ export const CO_ENERGY_PLANTS: readonly CoEnergyPlant[] = [
     "kind": "sun"
   },
   {
+    "lat": 40.616742,
+    "lng": -104.848924,
+    "kind": "sun"
+  },
+  {
     "lat": 39.892563,
     "lng": -104.668494,
+    "kind": "sun"
+  },
+  {
+    "lat": 37.705,
+    "lng": -108.755,
     "kind": "sun"
   },
   {
@@ -807,6 +802,11 @@ export const CO_ENERGY_PLANTS: readonly CoEnergyPlant[] = [
   {
     "lat": 39.752334,
     "lng": -104.66733,
+    "kind": "sun"
+  },
+  {
+    "lat": 40.327892,
+    "lng": -107.75333,
     "kind": "sun"
   },
   {
@@ -910,6 +910,31 @@ export const CO_ENERGY_PLANTS: readonly CoEnergyPlant[] = [
     "kind": "sun"
   },
   {
+    "lat": 39.5266,
+    "lng": -107.698,
+    "kind": "sun"
+  },
+  {
+    "lat": 39.3959,
+    "lng": -108.0733,
+    "kind": "sun"
+  },
+  {
+    "lat": 40.318,
+    "lng": -104.8914,
+    "kind": "sun"
+  },
+  {
+    "lat": 40.311735,
+    "lng": -104.77139,
+    "kind": "sun"
+  },
+  {
+    "lat": 40.47111,
+    "lng": -104.65139,
+    "kind": "sun"
+  },
+  {
     "lat": 38.169473,
     "lng": -104.618971,
     "kind": "sun"
@@ -950,6 +975,11 @@ export const CO_ENERGY_PLANTS: readonly CoEnergyPlant[] = [
     "kind": "sun"
   },
   {
+    "lat": 38.740617,
+    "lng": -107.9825,
+    "kind": "sun"
+  },
+  {
     "lat": 40.34036,
     "lng": -104.87889,
     "kind": "sun"
@@ -980,8 +1010,53 @@ export const CO_ENERGY_PLANTS: readonly CoEnergyPlant[] = [
     "kind": "sun"
   },
   {
+    "lat": 40.434751,
+    "lng": -104.645865,
+    "kind": "sun"
+  },
+  {
     "lat": 40.32734,
     "lng": -104.751821,
+    "kind": "sun"
+  },
+  {
+    "lat": 40.27482,
+    "lng": -103.634366,
+    "kind": "sun"
+  },
+  {
+    "lat": 40.082241,
+    "lng": -105.16688,
+    "kind": "sun"
+  },
+  {
+    "lat": 40.2728,
+    "lng": -103.6341,
+    "kind": "sun"
+  },
+  {
+    "lat": 38.15319,
+    "lng": -104.57626,
+    "kind": "sun"
+  },
+  {
+    "lat": 39.48234,
+    "lng": -108.10046,
+    "kind": "sun"
+  },
+  {
+    "lat": 39.665453,
+    "lng": -104.716383,
+    "kind": "sun"
+  },
+  {
+    "lat": 40.590104,
+    "lng": -104.995164,
+    "kind": "sun"
+  },
+  {
+    "lat": 38.28168,
+    "lng": -104.51678,
     "kind": "sun"
   }
 ] as const;
