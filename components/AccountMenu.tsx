@@ -142,12 +142,19 @@ export function AccountMenu({ address, labelClassName }: AccountMenuProps) {
   const [isSwitching, setIsSwitching] = useState(false);
   const [pendingAddress, setPendingAddress] = useState<Address | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const switchStartedAt = useRef<number | null>(null);
   const config = useConfig();
   const { address: activeAddress, connector } = useAccount();
   const { wallets, ready: walletsReady } = useWallets();
   const { setActiveWallet } = useSetActiveWallet();
 
   const connectedAddress = activeAddress ?? address;
+
+  const refreshAccounts = useCallback(async () => {
+    if (!connector) return;
+    const list = await connector.getAccounts();
+    setAccounts(list);
+  }, [connector]);
 
   useEffect(() => {
     if (!connector || !walletsReady) return;
@@ -192,23 +199,53 @@ export function AccountMenu({ address, labelClassName }: AccountMenuProps) {
     (wallet) => !connectorAddresses.has(wallet.address.toLowerCase()),
   );
 
-  const canSwitch =
-    accounts.length + externalWallets.length > 1 ||
-    uniqueWallets.length > 1;
+  const menuAccountCount = accounts.length + externalWallets.length;
+  const canSwitch = menuAccountCount > 1 || uniqueWallets.length > 1;
+
+  const handleToggleMenu = () => {
+    if (isSwitching || !walletsReady) return;
+    setOpen((current) => {
+      const next = !current;
+      if (next) void refreshAccounts();
+      return next;
+    });
+  };
 
   const finishSwitch = useCallback(() => {
     setIsSwitching(false);
     setPendingAddress(null);
+    switchStartedAt.current = null;
   }, []);
+
+  useEffect(() => {
+    if (isSwitching && switchStartedAt.current === null) {
+      switchStartedAt.current = performance.now();
+    }
+    if (!isSwitching) {
+      switchStartedAt.current = null;
+    }
+  }, [isSwitching]);
 
   useEffect(() => {
     if (!isSwitching || !pendingAddress) return;
     if (pendingAddress.toLowerCase() !== connectedAddress.toLowerCase()) return;
 
-    const timer = window.setTimeout(finishSwitch, SWITCH_SPINNER_MS);
+    const elapsed = switchStartedAt.current
+      ? performance.now() - switchStartedAt.current
+      : 0;
+    const remaining = Math.max(0, SWITCH_SPINNER_MS - elapsed);
+    const timer = window.setTimeout(finishSwitch, remaining);
 
     return () => window.clearTimeout(timer);
   }, [isSwitching, pendingAddress, connectedAddress, finishSwitch]);
+
+  useEffect(() => {
+    if (!isSwitching || !pendingAddress) return;
+
+    const timer = window.setTimeout(finishSwitch, 5_000);
+
+    return () => window.clearTimeout(timer);
+  }, [isSwitching, pendingAddress, finishSwitch]);
 
   const handleSelect = async (target: Address) => {
     setOpen(false);
@@ -249,7 +286,7 @@ export function AccountMenu({ address, labelClassName }: AccountMenuProps) {
 
   const displayAddress = pendingAddress ?? connectedAddress;
 
-  if (!canSwitch) {
+  if (!walletsReady) {
     return (
       <AccountLabel
         address={displayAddress}
@@ -266,10 +303,7 @@ export function AccountMenu({ address, labelClassName }: AccountMenuProps) {
         isSwitching={isSwitching}
         labelClassName={labelClassName}
         menuOpen={open}
-        onClick={() => {
-          if (isSwitching) return;
-          setOpen((current) => !current);
-        }}
+        onClick={handleToggleMenu}
       />
       {open ? (
         <div
@@ -277,6 +311,11 @@ export function AccountMenu({ address, labelClassName }: AccountMenuProps) {
           aria-label="Select wallet account"
           className="absolute right-0 top-full z-50 mt-1 min-w-48 border border-[#3d3d3d] bg-[#050505] py-1 shadow-lg"
         >
+          {!canSwitch ? (
+            <div className="px-3 py-2 font-mono text-[10px] uppercase tracking-[0.22em] text-[#666666]">
+              Only one account available
+            </div>
+          ) : null}
           {accounts.map((account) => (
             <AccountOption
               key={account}
