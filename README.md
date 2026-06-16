@@ -32,3 +32,7 @@ The frontend interface for Wilderform Tools' VeriJouleCore architecture. It prov
 
 - **Proof of Concept:** This is a strictly technical architecture demonstration operating on the Sepolia testnet with test USDC. The interface acts as a visual layer over public on-chain data. The tokens and retirements executed within this tool do not represent legally recognized RECs or regulatory compliance instruments.
 - **Client-Side Verification:** PDF certificates are generated natively on the client from indexed public data. All retirements can be independently verified on-chain utilizing the transaction hashes provided in the audit trail.
+
+## Licensing
+
+Released under the [MIT License](LICENSE). Copyright (c) 2026 Wilderform Tools LLC.

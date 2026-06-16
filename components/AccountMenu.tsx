@@ -142,7 +142,6 @@ export function AccountMenu({ address, labelClassName }: AccountMenuProps) {
   const [isSwitching, setIsSwitching] = useState(false);
   const [pendingAddress, setPendingAddress] = useState<Address | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const switchStartedAt = useRef<number | null>(null);
   const config = useConfig();
   const { address: activeAddress, connector } = useAccount();
   const { wallets, ready: walletsReady } = useWallets();
@@ -200,18 +199,13 @@ export function AccountMenu({ address, labelClassName }: AccountMenuProps) {
   const finishSwitch = useCallback(() => {
     setIsSwitching(false);
     setPendingAddress(null);
-    switchStartedAt.current = null;
   }, []);
 
   useEffect(() => {
     if (!isSwitching || !pendingAddress) return;
     if (pendingAddress.toLowerCase() !== connectedAddress.toLowerCase()) return;
 
-    const elapsed = switchStartedAt.current
-      ? Date.now() - switchStartedAt.current
-      : 0;
-    const remaining = Math.max(0, SWITCH_SPINNER_MS - elapsed);
-    const timer = window.setTimeout(finishSwitch, remaining);
+    const timer = window.setTimeout(finishSwitch, SWITCH_SPINNER_MS);
 
     return () => window.clearTimeout(timer);
   }, [isSwitching, pendingAddress, connectedAddress, finishSwitch]);
@@ -222,7 +216,6 @@ export function AccountMenu({ address, labelClassName }: AccountMenuProps) {
 
     setPendingAddress(target);
     setIsSwitching(true);
-    switchStartedAt.current = Date.now();
 
     try {
       const permitted = connector
