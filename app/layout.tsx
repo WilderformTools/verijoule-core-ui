@@ -12,8 +12,8 @@ const jetbrainsMono = JetBrains_Mono({
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "VeriJoule Core",
-  description: "Decentralized telemetry engine — Wilderform Tools LLC.",
+  title: "VeriJouleCore",
+  description: "VeriJouleCore by Wilderform Tools: A technical proof of concept turning real-world energy generation data into verifiable on-chain state via Chainlink CRE.",
 };
 
 export default function RootLayout({
