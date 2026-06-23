@@ -21,9 +21,15 @@ type GraphQLResponse = {
 const INDEXER_URL =
   process.env.NEXT_PUBLIC_INDEXER_URL?.trim() || "http://localhost:42069";
 
+// Ponder GraphQL defaults to limit 50; omitting it hid newest vintages once count exceeded 50.
 const ACTIVE_VINTAGES_QUERY = `
   query ActiveVintages {
-    recVintageBalances(where: { availableBalance_gt: "0" }) {
+    recVintageBalances(
+      where: { availableBalance_gt: "0" }
+      orderBy: "vintageId"
+      orderDirection: "asc"
+      limit: 500
+    ) {
       items {
         vintageId
         availableBalance
